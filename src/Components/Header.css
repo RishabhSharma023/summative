@@ -1,0 +1,72 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Ensures all elements are vertically aligned */
+  padding: 1em 3%;
+  background-color: black;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 0px;
+}
+
+.logoImg {
+  width: 70px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.logo {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #4c7dd4;
+}
+
+.login-container {
+  display: flex;
+  align-items: center; /* Ensures buttons and search bar are aligned */
+  gap: 1em;
+  margin-right: 12.5px;
+}
+
+.search-form {
+  display: flex;
+  align-items: center; /* Aligns the search bar vertically */
+  gap: 5px;
+  margin-right: 10px;
+}
+
+.search-box {
+  margin-top: 10px;
+  border: 1px solid #4c7dd4;
+  border-radius: 5px;
+  font-size: 1rem;
+  color: #000;
+}
+
+.button {
+  padding: 0.55em 1em;
+  border: none;
+  border-radius: 0.3em;
+  background-color: #4c7dd4;
+  color: white;
+  cursor: pointer;
+}
+
+.button:hover {
+  transform: scale(1.05);
+  transition: transform 0.25s;
+}
+
+.welcome-message {
+  font-size: 1rem;
+  color: #4c7dd4;
+  margin-right: 10px;
+}

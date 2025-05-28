@@ -1,0 +1,132 @@
+.search-view {
+    padding: 20px;
+    text-align: center;
+    background-color: #1a1a1a;
+    color: #4c7dd4;
+    min-height: 100vh;
+}
+
+.search-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.search-form {
+    margin-bottom: 20px;
+}
+
+.search-input {
+    width: 80%;
+    max-width: 500px;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #4c7dd4;
+    border-radius: 5px;
+    background-color: #000;
+    color: #fff;
+}
+
+.search-results-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 columns */
+    grid-template-rows: repeat(4, auto); /* Up to 4 rows */
+    gap: 20px; /* Space between items */
+    justify-items: center;
+    width: 100%;
+    max-width: 1200px; /* Optional: Limit the grid width */
+    margin: 0 auto; /* Center the grid */
+}
+
+.search-result-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #000;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 200px;
+}
+
+.search-result-poster {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.search-result-title {
+    font-size: 1rem;
+    color: #1e90ff;
+    text-align: center;
+}
+
+.no-image {
+    width: 100%;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0f0f0f;
+    color: #fff;
+    font-size: 1rem;
+    border-radius: 5px;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.pagination-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #ffffff;
+    background-color: #4c7dd4;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.pagination-button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+.pagination-button:hover:not(:disabled) {
+    background-color: #1e90ff;
+    transform: scale(1.05);
+}
+
+.pagination-info {
+    font-size: 1.2rem;
+    color: #ffffff;
+}
+
+.no-results-message {
+    font-size: 1.2rem;
+    color: #ffffff;
+    margin-top: 20px;
+}
+
+.buy-button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #ffffff;
+    background-color: #4c7dd4;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.buy-button:hover {
+    background-color: #1e90ff;
+    transform: scale(1.05);
+}

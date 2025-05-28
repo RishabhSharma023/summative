@@ -1,0 +1,120 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  min-height: 100vh; /* Ensures the container spans the full height of the viewport */
+}
+
+h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #1e90ff;
+  margin-bottom: 20px;
+}
+
+.genre-view-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 movies wide */
+  grid-template-rows: repeat(4, auto); /* 4 rows */
+  gap: 20px; /* Space between movie cards */
+  padding: 20px;
+  justify-content: center;
+  width: 90%; /* Make the container wider */
+  margin-left: auto; /* Align the container slightly to the left */
+  margin-right: auto;
+}
+
+.genre-view-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.genre-view-item:hover {
+  transform: scale(1.05); /* Slight zoom on hover */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.8);
+}
+
+.genre-view-image {
+  width: 100%;
+  height: auto;
+  border-radius: 10px 10px 0 0; /* Rounded corners for the top */
+}
+
+.no-image {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0f0f0f;
+  color: #fff;
+  font-size: 1rem;
+  border-radius: 10px 10px 0 0;
+}
+
+.genre-view-item h3 {
+  font-size: 16px;
+  margin-top: 10px;
+  text-align: center;
+  color: #1e90ff;
+  font-weight: bold;
+  padding: 10px;
+  background-color: #1a1a1a; /* Match the background color of .genre-view-item */
+  width: 100%;
+  border-top: 1px solid #333; /* Optional: Adjust border color for consistency */
+}
+
+.genre-view-pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.genre-view-pagination-button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: #ffffff;
+  background-color: #4c7dd4;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.genre-view-pagination-button:hover {
+  background-color: #1e90ff;
+  transform: scale(1.05);
+}
+
+.genre-view-pagination-number {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.buy-button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #ffffff;
+    background-color: #4c7dd4;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.buy-button:hover {
+    background-color: #1e90ff;
+    transform: scale(1.05);
+}

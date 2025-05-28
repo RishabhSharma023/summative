@@ -1,0 +1,77 @@
+.settings-container {
+    padding: 20px;
+    text-align: center;
+    background-color: #1a1a1a;
+    color: #4c7dd4;
+    min-height: 100vh;
+}
+
+.settings-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.settings-label {
+    font-size: 1rem;
+    color: #4c7dd4;
+    align-self: flex-start;
+}
+
+.settings-input,
+.settings-select {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #4c7dd4;
+    border-radius: 5px;
+    background-color: #000;
+    color: #fff;
+}
+
+.settings-input:disabled {
+    background-color: #333;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.settings-save-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #ffffff;
+    background-color: #4c7dd4;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.settings-save-button:hover {
+    background-color: #1e90ff;
+    transform: scale(1.05);
+}
+
+.back-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #ffffff;
+    background-color: #4c7dd4;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.back-button:hover {
+    background-color: #1e90ff;
+    transform: scale(1.05);
+}
