@@ -1,15 +1,17 @@
-import { useEffect } from "react";
+import { useEffect, useContext } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import Header from "../Components/Header";
 import Genres from "../Components/Genres";
-import Foooter from "../Components/Footer";
+import Footer from "../Components/Footer";
+import { UserContext } from "../Contexts/UserContext.jsx";
 import "./MoviesView.css";
 
 function MoviesView() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { user } = useContext(UserContext);
 
-    const genres = [
+    const allGenres = [
         { genre: "Action", id: 28 },
         { genre: "Adventure", id: 12 },
         { genre: "Animation", id: 16 },
@@ -22,24 +24,29 @@ function MoviesView() {
         { genre: "Thriller", id: 53 },
     ];
 
+    // Filter genres based on user's selected genres
+    const filteredGenres = allGenres.filter((genre) =>
+        user?.selectedGenres?.includes(genre.genre)
+    );
+
     useEffect(() => {
-        if (location.pathname === "/movies") {
-            navigate(`/movies/genre/${genres[0].id}`);
+        if (location.pathname === "/movies" && filteredGenres.length > 0) {
+            navigate(`/movies/genre/${filteredGenres[0].id}`);
         }
-    }, [location, navigate, genres]);
+    }, [location, navigate, filteredGenres]);
 
     return (
         <div className="moviesView-container">
             <Header />
             <div className="genres-section">
                 <div className="list-of-genres">
-                    <Genres genresList={genres} />
+                    <Genres genresList={filteredGenres} />
                 </div>
                 <div className="genre-movies">
                     <Outlet />
                 </div>
             </div>
-            <Foooter />
+            <Footer />
         </div>
     );
 }
