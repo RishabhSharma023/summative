@@ -1,35 +1,26 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import "./App.css";
-import HomeView from "./Views/HomeView.jsx";
-import RegisterView from "./Views/RegisterView.jsx";
-import LoginView from "./Views/LoginView.jsx";
-import MoviesView from "./Views/MoviesView.jsx";
-import GenreView from "./Views/GenreView.jsx";
-import DetailView from "./Views/DetailView.jsx";
-import ErrorView from "./Views/ErrorView.jsx";
-import CartView from "./Views/CartView.jsx";
-import SearchView from "./Views/SearchView.jsx";
-import SettingsView from "./Views/SettingsView.jsx";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { StoreProvider } from './context';
+import LoginView from './views/LoginView';
+import AuthenticatedView from './views/AuthenticatedView';
+import HomeView from './views/HomeView';
+import RegisterView from './views/RegisterView';
+import ProtectedRoutes from './utils/ProtectedRoutes';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomeView />} />
-        <Route path="/register" element={<RegisterView />} />
-        <Route path="/login" element={<LoginView />} />
-        <Route path="/movies" element={<MoviesView />}>
-          <Route path="genre/:genre_id" element={<GenreView />} />
-          <Route path="/movies/details/:id" element={<DetailView />} />
-          <Route path="search" element={<SearchView />} />
-          <Route path="search/details/:id" element={<DetailView />} />
-        </Route>
-        <Route path="/cart" element={<CartView />} />
-        <Route path="/settings" element={<SettingsView />} />
-        <Route path="*" element={<ErrorView />} />
-      </Routes>
-    </Router>
-  );
+    <StoreProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomeView />} />
+          <Route path="/register" element={<RegisterView />} />
+          <Route path="/login" element={<LoginView />} />
+          <Route element={<ProtectedRoutes />}>
+            <Route path="/authenticated" element={<AuthenticatedView />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </StoreProvider>
+  )
 }
 
 export default App;
