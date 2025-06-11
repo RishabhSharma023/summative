@@ -1,51 +1,178 @@
-import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '../firebase';
-import { useStoreContext } from '../context';
-import { useNavigate } from 'react-router-dom';
 import "./RegisterView.css";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, firestore } from "../firebase";
+import Header from "../Components/Header.jsx";
 
-export default function RegisterView() {
-    const [form, setForm] = useState({ username: '', email: '', password: '' });
-    const { setUser } = useStoreContext();
+function RegisterView() {
     const navigate = useNavigate();
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [rePassword, setRePassword] = useState("");
+    const [selectedGenres, setSelectedGenres] = useState([]);
+    const [error, setError] = useState("");
 
-    const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+    const genres = [
+        { name: "Action", id: 28 },
+        { name: "Adventure", id: 12 },
+        { name: "Animation", id: 16 },
+        { name: "Comedy", id: 35 },
+        { name: "Family", id: 10751 },
+        { name: "Fantasy", id: 14 },
+        { name: "History", id: 36 },
+        { name: "Horror", id: 27 },
+        { name: "Sci-Fi", id: 878 },
+        { name: "Thriller", id: 53 },
+    ];
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        try {
-            const result = await createUserWithEmailAndPassword(auth, form.email, form.password);
-            setUser(result.user);
-            navigate("/authenticated");
-        } catch (error) {
-            console.error("Error creating user:", error);
+    function handleGenreChange(event) {
+        const { value, checked } = event.target;
+        if (checked) {
+            setSelectedGenres((prev) => [...prev, value]);
+        } else {
+            setSelectedGenres((prev) => prev.filter((genre) => genre !== value));
         }
-    };
+    }
 
-    const googleSignIn = async () => {
-        const provider = new GoogleAuthProvider();
+    async function handleEmailRegister(event) {
+        event.preventDefault();
+
+        if (password !== rePassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
+        if (selectedGenres.length < 5) {
+            setError("Please select at least 5 genres");
+            return;
+        }
+
         try {
-            const result = await signInWithPopup(auth, provider);
-            setUser(result.user);
-            console.log("User signed in with Google:", result.user);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Store additional user data in Firestore
+            await setDoc(doc(firestore, "users", user.uid), {
+                firstName,
+                lastName,
+                email,
+                preferences: {
+                    selectedGenres,
+                },
+                purchases: [],
+                authProvider: "email"
+            });
+
+            navigate("/movies");
         } catch (error) {
-            console.error("Error signing in with Google:", error);
+            if (error.code === "auth/email-already-in-use") {
+                setError("Email already registered");
+            } else {
+                setError("Registration failed. Please try again.");
+            }
+        }
+    }
+
+    async function handleGoogleRegister() {
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            // Store additional user data in Firestore
+            await setDoc(doc(firestore, "users", user.uid), {
+                firstName: user.displayName?.split(" ")[0] || "",
+                lastName: user.displayName?.split(" ")[1] || "",
+                email: user.email,
+                preferences: {
+                    selectedGenres: [],
+                },
+                purchases: [],
+                authProvider: "google"
+            }, { merge: true });
+
+            navigate("/movies");
+        } catch (error) {
+            setError("Could not register with Google");
         }
     }
 
     return (
-        <>
-            <form onSubmit={handleSubmit} style={{ maxWidth: 300, margin: '2rem auto' }}>
-                <h2>Register</h2>
-                <input name="username" placeholder="Username" onChange={handleChange} value={form.username} required />
-                <input name="email" type="email" placeholder="Email" onChange={handleChange} value={form.email} required />
-                <input name="password" type="password" placeholder="Password" onChange={handleChange} value={form.password} required />
-                <button type="submit">Register</button>
-            </form>
-
-            <button onClick={googleSignIn} className="google-signin-btn">Google Sign In</button>
-        </>
+        <div>
+            <Header />
+            <div className="formContainerReg">
+                <h1 className="formTitleReg">Register</h1>
+                {error && <p className="error-message">{error}</p>}
+                <form className="formReg" onSubmit={handleEmailRegister}>
+                    <label className="boxLabelsReg">First Name:</label>
+                    <input
+                        required
+                        className="infoBoxesReg"
+                        type="text"
+                        value={firstName}
+                        onChange={(event) => setFirstName(event.target.value)}
+                    />
+                    <label className="boxLabelsReg">Last Name:</label>
+                    <input
+                        required
+                        className="infoBoxesReg"
+                        type="text"
+                        value={lastName}
+                        onChange={(event) => setLastName(event.target.value)}
+                    />
+                    <label className="boxLabelsReg">Email:</label>
+                    <input
+                        required
+                        className="infoBoxesReg"
+                        type="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                    />
+                    <label className="boxLabelsReg">Password:</label>
+                    <input
+                        required
+                        className="infoBoxesReg"
+                        type="password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                    />
+                    <label className="boxLabelsReg">Re-enter Password:</label>
+                    <input
+                        required
+                        className="infoBoxesReg"
+                        type="password"
+                        value={rePassword}
+                        onChange={(event) => setRePassword(event.target.value)}
+                    />
+                    <label className="boxLabelsReg">Select Genres (at least 5):</label>
+                    <div className="genres-checkboxes">
+                        {genres.map((genre) => (
+                            <div key={genre.id} className="genre-checkbox">
+                                <input
+                                    type="checkbox"
+                                    value={genre.name}
+                                    onChange={handleGenreChange}
+                                />
+                                <label>{genre.name}</label>
+                            </div>
+                        ))}
+                    </div>
+                    <input
+                        className="registerButtonReg"
+                        type="submit"
+                        value="Register"
+                    />
+                </form>
+                <button className="googleButton" onClick={handleGoogleRegister}>
+                    Register with Google
+                </button>
+            </div>
+        </div>
     );
 }
+
+export default RegisterView;

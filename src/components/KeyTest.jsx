@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useStoreContext } from '../context';
+import { useStoreContext } from '../Contexts';
 import { Map } from "immutable";
 import { firestore } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';

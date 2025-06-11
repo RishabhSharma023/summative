@@ -1,0 +1,125 @@
+.movie-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: #000000; /* Black background */
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Slightly darker shadow */
+}
+
+.movie-content {
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  align-items: center; /* Center items horizontally */
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.movie-poster {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Slightly darker shadow */
+}
+
+.movie-title {
+  font-size: 2.8rem; /* Slightly larger font size to prevent cutting */
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #4c7dd4; /* Blue title */
+  word-wrap: break-word; /* Ensure long titles wrap to the next line */
+  text-align: center; /* Center the title */
+}
+
+.movie-info {
+  text-align: center; /* Center text */
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #4c7dd4; /* Blue text for information */
+}
+
+.movie-info p {
+  margin: 5px 0;
+}
+
+.movie-overview {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  padding: 0 20px; /* Add padding for better readability */
+  text-align: justify;
+  color: #e8eaed; /* Light gray for readability */
+}
+
+.trailers-section {
+  width: 100%;
+  margin-top: 20px;
+  text-align: center; /* Center the trailers section */
+}
+
+.trailers-section h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #4c7dd4; /* Blue heading for trailers */
+}
+
+.trailers-grid {
+  display: grid; /* Use grid layout */
+  grid-template-columns: repeat(3, 1fr); /* 3 columns wide */
+  gap: 20px; /* Space between grid items */
+  justify-content: center; /* Center the grid items */
+  width: 100%; /* Ensure the grid takes full width */
+}
+
+.trailer-tile {
+  text-align: center;
+  background-color: #1a1a1a; /* Add a background for better visibility */
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Add shadow for better aesthetics */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.trailer-tile:hover {
+  transform: scale(1.05); /* Slight zoom on hover */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7); /* Darker shadow on hover */
+}
+
+.trailer-thumbnail {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Slightly darker shadow */
+  transition: transform 0.3s ease;
+}
+
+.trailer-thumbnail:hover {
+  transform: scale(1.05);
+}
+
+.trailer-name {
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #4c7dd4; /* Blue text for trailer names */
+  font-weight: bold;
+  text-align: center;
+}
+
+.back-button {
+  margin-bottom: 20px;
+  background-color: #1e90ff;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #1c7ed6;
+}

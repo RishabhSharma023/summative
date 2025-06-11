@@ -1,0 +1,26 @@
+.genre-button {
+    background-color: #1a1a1a;
+    color: #1e90ff;
+    border: 1px solid #1e90ff;
+    padding: 10px 12px;
+    margin: 5px 0;
+    font-size: 1rem;
+    border-radius: 5px;
+    width: 100%;
+    text-align: left;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .genre-button:hover {
+    background-color: #1e90ff;
+    color: #ffffff;
+    transform: scale(1.03);
+  }
+  
+  .genre-button.selected {
+    background-color: #1e90ff;
+    color: white;
+    font-weight: bold;
+    transform: scale(1.03);
+  }
+  

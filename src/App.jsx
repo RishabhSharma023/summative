@@ -1,5 +1,5 @@
 import { BrowserRouter } from 'react-router-dom';
-import { StoreProvider } from './context';
+import { StoreProvider } from './Contexts';
 import AppRoutes from './AppRoutes';
 
 function App() {

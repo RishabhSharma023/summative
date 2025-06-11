@@ -1,10 +1,10 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useStoreContext } from '../context';
+import { Navigate, Outlet } from "react-router-dom";
+import { useStoreContext } from "../Contexts";
 
-export default function ProtectedRoutes() {
+function ProtectedRoutes() {
     const { user } = useStoreContext();
-
-    return (
-        user ? <Outlet /> : <Navigate to="/login" />
-    );
+    
+    return user ? <Outlet /> : <Navigate to="/login" />;
 }
+
+export default ProtectedRoutes;

@@ -1,0 +1,59 @@
+.featured {
+  padding: 20px 0;
+  margin: 0px;
+  background-color: black;
+  width: 100%;
+}
+
+.featured h2 {
+  color: #4c7dd4;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  margin-bottom: 1em;
+  padding: 0 1em;
+}
+
+.featured .posters {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+}
+
+.featured .poster {
+  width: 30%;
+  height: auto;
+  border-radius: 5px;
+}
+
+.featured .poster:hover {
+  transform: scale(1.05);
+  transition: transform 0.25s;
+}
+
+.movie-container {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+
+.movie-card {
+  background-color: #1a1a1a;
+  color: #4c7dd4;
+  text-align: center;
+  border-radius: 10px;
+  margin-top: -150px;
+  padding: 10px;
+  width: 30%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.movie-poster {
+  width: 100%;
+  border-radius: 5px;
+}
+
+.movie-card h1 {
+  font-size: 1.2em;
+  margin: 10px 0;
+}

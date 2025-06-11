@@ -1,49 +1,68 @@
-import React, { useState } from 'react';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '../firebase';
-import { useStoreContext } from '../context';
-import { useNavigate } from 'react-router-dom';
-import './LoginView.css';
+import "./LoginView.css";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../firebase";
+import Header from "../Components/Header.jsx";
 
-export default function LoginView() {
-    const [form, setForm] = useState({ email: '', password: '' });
-    const { setUser } = useStoreContext();
+function LoginView() {
     const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
-    const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    async function handleEmailLogin(event) {
+        event.preventDefault();
         try {
-            const result = await signInWithEmailAndPassword(auth, form.email, form.password);
-            setUser(result.user);
-            navigate("/authenticated");
+            await signInWithEmailAndPassword(auth, email, password);
+            navigate("/movies");
         } catch (error) {
-            console.error("Login error:", error.message);
+            setError("Invalid email or password");
         }
-    };
+    }
 
-    const googleSignIn = async () => {
-        const provider = new GoogleAuthProvider();
+    async function handleGoogleLogin() {
         try {
-            const result = await signInWithPopup(auth, provider);
-            setUser(result.user);
-            navigate("/authenticated");
+            const provider = new GoogleAuthProvider();
+            await signInWithPopup(auth, provider);
+            navigate("/movies");
         } catch (error) {
-            console.error("Google sign-in error:", error.message);
+            setError("Could not sign in with Google");
         }
-    };
+    }
 
     return (
-        <>
-            <form onSubmit={handleSubmit} className="auth-form">
-                <h2>Login</h2>
-                <input name="email" type="email" placeholder="Email" onChange={handleChange} value={form.email} required />
-                <input name="password" type="password" placeholder="Password" onChange={handleChange} value={form.password} required />
-                <button type="submit">Login</button>
-            </form>
-
-            <button onClick={googleSignIn} className="google-signin-btn">Google Sign In</button>
-        </>
+        <div>
+            <Header />
+            <div className="formContainerLog">
+                <h1 className="headerLog">Amazin' Prime Video</h1>
+                <h2 className="formTitleLog">Login</h2>
+                {error && <p className="error-message">{error}</p>}
+                <form className="formLog" onSubmit={handleEmailLogin}>
+                    <label className="boxLabelsLog">Email:</label>
+                    <input
+                        required
+                        className="infoBoxesLog"
+                        type="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                    />
+                    <label className="boxLabelsLog">Password:</label>
+                    <input
+                        required
+                        className="infoBoxesLog"
+                        type="password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                    />
+                    <input className="loginButtonLog" type="submit" value="Login" />
+                </form>
+                <button className="googleButton" onClick={handleGoogleLogin}>
+                    Sign in with Google
+                </button>
+            </div>
+        </div>
     );
 }
+
+export default LoginView;

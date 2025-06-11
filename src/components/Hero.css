@@ -1,0 +1,49 @@
+.hero {
+  display: flex;
+  align-items: center;
+  background-color: black;
+  justify-content: center;
+  width: 100%;
+  margin-top: 4%; /* was 50 b4... if everything messed change this */
+  flex: 1;
+}
+
+.hero img {
+  background-color: black;
+  max-width: 100%;
+  height: auto;
+  flex-shrink: 1;
+  display: block;
+  margin-left: 0px;
+}
+
+.hero img:hover {
+  transform: scale(1.025);
+  transition: transform 0.5s;
+}
+
+/*
+.hero {
+  display: flex;
+  align-items: center;
+  background-color: black;
+  justify-content: center;
+  width: 100%;
+  margin-top: 5%;
+  flex: 1;
+}
+
+.hero img {
+  background-color: black;
+  max-width: 100%;
+  height: auto;
+  flex-shrink: 1;
+  display: block;
+  margin-left: 0;
+}
+
+.hero img:hover {
+  transform: scale(1.025);
+  transition: transform 0.5s;
+}*/ 
+  
