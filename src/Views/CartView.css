@@ -126,3 +126,32 @@
     background-color: #1e90ff;
     transform: scale(1.05);
 }
+
+.checkout-button {
+    margin: 20px;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    color: #ffffff;
+    background-color: #4CAF50; /* Green color for checkout */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.checkout-button:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+.success-message {
+    color: #4CAF50;
+    font-size: 1.2rem;
+    margin: 10px 0;
+}
+
+.error-message {
+    color: #ff4c4c;
+    font-size: 1.2rem;
+    margin: 10px 0;
+}

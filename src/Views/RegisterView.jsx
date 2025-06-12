@@ -1,13 +1,15 @@
 import "./RegisterView.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, firestore } from "../firebase";
 import Header from "../Components/Header.jsx";
+import { useStoreContext } from "../Contexts";
 
 function RegisterView() {
     const navigate = useNavigate();
+    const { user } = useStoreContext();
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -15,6 +17,13 @@ function RegisterView() {
     const [rePassword, setRePassword] = useState("");
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [error, setError] = useState("");
+
+    // Redirect if user is already logged in
+    useEffect(() => {
+        if (user) {
+            navigate('/movies');
+        }
+    }, [user, navigate]);
 
     const genres = [
         { name: "Action", id: 28 },
@@ -55,14 +64,17 @@ function RegisterView() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Store additional user data in Firestore
+            // Store additional user data in Firestore            // Update the user profile
+            await updateProfile(user, {
+                displayName: `${firstName} ${lastName}`
+            });
+
+            // Store user data in Firestore
             await setDoc(doc(firestore, "users", user.uid), {
                 firstName,
                 lastName,
                 email,
-                preferences: {
-                    selectedGenres,
-                },
+                selectedGenres,
                 purchases: [],
                 authProvider: "email"
             });
@@ -81,16 +93,11 @@ function RegisterView() {
         try {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-
-            // Store additional user data in Firestore
-            await setDoc(doc(firestore, "users", user.uid), {
+            const user = result.user;            await setDoc(doc(firestore, "users", user.uid), {
                 firstName: user.displayName?.split(" ")[0] || "",
                 lastName: user.displayName?.split(" ")[1] || "",
                 email: user.email,
-                preferences: {
-                    selectedGenres: [],
-                },
+                selectedGenres: [],
                 purchases: [],
                 authProvider: "google"
             }, { merge: true });

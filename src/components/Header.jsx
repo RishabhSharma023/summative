@@ -21,11 +21,14 @@ function Header() {
         return () => {
             clearTimeout(handler);
         };
-    }, [searchQuery, navigate]);
-
-    function handleSignOut() {
-        logout();
-        navigate("/");
+    }, [searchQuery, navigate]);    async function handleSignOut() {
+        try {
+            await logout();
+            localStorage.removeItem("isLoggedIn");
+            navigate("/");
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
     }
 
     function handleBlur(event) {

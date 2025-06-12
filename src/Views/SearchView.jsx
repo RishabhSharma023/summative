@@ -10,7 +10,7 @@ function SearchView() {
     const [totalPages, setTotalPages] = useState(1);
     const [debouncedQuery, setDebouncedQuery] = useState("");
     const [searchParams] = useSearchParams();
-    const { cart, addToCart, removeFromCart } = useStoreContext();
+    const { cart, addToCart, removeFromCart, purchases } = useStoreContext();
 
     useEffect(() => {
         const query = searchParams.get("query") || "";
@@ -39,9 +39,16 @@ function SearchView() {
         fetchSearchResults();
     }, [debouncedQuery, currentPage]);
 
-    function isInCart(movieId) {
-        return cart.some((movie) => movie.id === movieId);
-    }
+    const isInCart = (movieId) => cart.some((item) => item.id === movieId);
+    const isPurchased = (movieId) => purchases?.some((item) => item.id === movieId);
+
+    const handleAddToCart = (movie) => {
+        if (isPurchased(movie.id)) {
+            alert("You already own this movie!");
+            return;
+        }
+        addToCart(movie);
+    };
 
     return (
         <div className="search-view">
@@ -68,7 +75,7 @@ function SearchView() {
                                     onClick={() =>
                                         isInCart(movie.id)
                                             ? removeFromCart(movie.id)
-                                            : addToCart(movie)
+                                            : handleAddToCart(movie)
                                     }
                                 >
                                     {isInCart(movie.id) ? "Added" : "Buy"}

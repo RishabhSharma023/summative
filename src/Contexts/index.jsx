@@ -12,37 +12,72 @@ export const StoreProvider = ({ children }) => {
     const [cart, setCart] = useState([]);
     const [preferences, setPreferences] = useState(null);
     const [purchases, setPurchases] = useState([]);
-    const navigate = useNavigate();
-
-    // Load cart from local storage when user changes
+    const navigate = useNavigate();    // Load cart and user data from local storage and Firestore
     useEffect(() => {
-        if (user) {
+        if (user?.uid) {
+            // Load cart from local storage
             const storedCart = localStorage.getItem(`cart-${user.uid}`);
             if (storedCart) {
                 setCart(JSON.parse(storedCart));
             }
 
-            // Load user preferences and purchases from Firestore
+            // Load user data from Firestore
             const loadUserData = async () => {
-                const userDoc = await getDoc(doc(firestore, "users", user.uid));
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    setPreferences(data.preferences || null);
-                    setPurchases(data.purchases || []);
+                try {
+                    const userRef = doc(firestore, "users", user.uid);
+                    const userDoc = await getDoc(userRef);
+                    
+                    if (!userDoc.exists()) {
+                        // Initialize user document with proper array structure
+                        const initialData = {
+                            firstName: user.displayName?.split(" ")[0] || "",
+                            lastName: user.displayName?.split(" ")[1] || "",
+                            email: user.email,
+                            selectedGenres: [],  // Ensure this is an array
+                            purchases: [],       // Ensure this is an array
+                            authProvider: user.providerData[0]?.providerId || "email"
+                        };
+                        await setDoc(userRef, initialData);
+                        setUser(prevUser => ({
+                            ...prevUser,
+                            ...initialData
+                        }));
+                        setPreferences({
+                            selectedGenres: []
+                        });
+                        setPurchases([]);
+                    } else {
+                        const data = userDoc.data();
+                        // Ensure arrays are handled properly
+                        const selectedGenres = Array.isArray(data.selectedGenres) ? data.selectedGenres : [];
+                        const purchases = Array.isArray(data.purchases) ? data.purchases : [];
+                        
+                        setUser(prevUser => ({
+                            ...prevUser,
+                            ...data,
+                            selectedGenres
+                        }));
+                        setPreferences({
+                            selectedGenres
+                        });
+                        setPurchases(purchases);
+                    }
+                } catch (error) {
+                    console.error("Error loading user data:", error);
                 }
             };
             loadUserData();
         }
-    }, [user]);
+    }, [user?.uid]);
 
-    // Save cart to local storage whenever it changes
+    // Save cart to local storage
     useEffect(() => {
-        if (user && cart) {
+        if (user?.uid && cart) {
             localStorage.setItem(`cart-${user.uid}`, JSON.stringify(cart));
         }
     }, [cart, user]);
 
-    // Handle Firebase auth state changes
+    // Handle auth state changes
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
@@ -51,59 +86,124 @@ export const StoreProvider = ({ children }) => {
                 setCart([]);
                 setPreferences(null);
                 setPurchases([]);
-                navigate('/');
+                localStorage.removeItem("isLoggedIn");
+            } else {
+                localStorage.setItem("isLoggedIn", "true");
             }
         });
-
         return () => unsubscribe();
-    }, [navigate]);
+    }, []);
 
     const logout = async () => {
         try {
             await signOut(auth);
-            localStorage.removeItem(`cart-${user.uid}`);
-            navigate('/');
+            localStorage.removeItem(`cart-${user?.uid}`);
+            localStorage.removeItem("isLoggedIn");
         } catch (error) {
             console.error("Error signing out:", error);
         }
-    };
+    };    const updatePreferences = async (newPreferences) => {
+        if (!user?.uid) throw new Error("Must be logged in to update preferences");
+        
+        try {
+            const userRef = doc(firestore, "users", user.uid);
+            const userDoc = await getDoc(userRef);
+            
+            // Ensure arrays are properly handled
+            const selectedGenres = Array.isArray(newPreferences.selectedGenres) ? newPreferences.selectedGenres : [];
+            
+            if (!userDoc.exists()) {
+                // Initialize the document if it doesn't exist
+                await setDoc(userRef, {
+                    firstName: user.displayName?.split(" ")[0] || "",
+                    lastName: user.displayName?.split(" ")[1] || "",
+                    email: user.email,
+                    selectedGenres,
+                    purchases: [], // Initialize empty purchases array
+                    authProvider: user.providerData[0]?.providerId || "email"
+                });
+            } else {
+                // Update existing document
+                const currentData = userDoc.data();
+                await setDoc(userRef, {
+                    ...currentData,
+                    selectedGenres
+                }, { merge: true }); // Use merge to preserve other fields
+            }
 
-    const updatePreferences = async (newPreferences) => {
-        if (!user) return;
-        setPreferences(newPreferences);
-        await setDoc(doc(firestore, "users", user.uid), {
-            preferences: newPreferences,
-            purchases: purchases
-        }, { merge: true });
+            // Update local state
+            setPreferences({ selectedGenres });
+            setUser(prevUser => ({
+                ...prevUser,
+                selectedGenres
+            }));
+            
+            return "Settings updated successfully!";
+        } catch (error) {
+            console.error("Error updating preferences:", error);
+            throw new Error("Failed to update your preferences. Please try again.");
+        }
     };
 
     const addToCart = (movie) => {
-        if (purchases.some(p => p.id === movie.id)) {
+        if (!user) {
+            alert("Please log in to add items to cart");
+            return;
+        }
+        
+        // Check if movie is already in purchases
+        if (purchases && purchases.some(p => p.id === movie.id)) {
             alert("You already own this movie!");
             return;
         }
+        
+        // Check if movie is already in cart
         if (!cart.some(item => item.id === movie.id)) {
-            setCart([...cart, movie]);
+            setCart(prevCart => [...prevCart, movie]);
+        } else {
+            alert("This movie is already in your cart!");
         }
     };
 
     const removeFromCart = (movieId) => {
         setCart(cart.filter(item => item.id !== movieId));
-    };
+    };    const checkout = async () => {
+        if (!user?.uid) {
+            throw new Error("Must be logged in to checkout");
+        }
 
-    const checkout = async () => {
-        if (!user || cart.length === 0) return;
-        
-        // Add cart items to purchases in Firestore
-        const newPurchases = [...purchases, ...cart];
-        await setDoc(doc(firestore, "users", user.uid), {
-            preferences: preferences,
-            purchases: newPurchases
-        }, { merge: true });
+        if (cart.length === 0) {
+            throw new Error("Cart is empty");
+        }
 
-        setPurchases(newPurchases);
-        setCart([]);
-        localStorage.removeItem(`cart-${user.uid}`);
+        try {
+            const userRef = doc(firestore, "users", user.uid);
+            const userDoc = await getDoc(userRef);
+            const userData = userDoc.data() || { purchases: [] };
+            
+            // Add current cart items to purchases
+            const newPurchases = [...(userData.purchases || []), ...cart];
+            
+            // Update the document with merge option
+            await setDoc(userRef, {
+                purchases: newPurchases,
+                email: user.email,
+                firstName: user.displayName?.split(" ")[0] || "",
+                lastName: user.displayName?.split(" ")[1] || "",
+                selectedGenres: userData.selectedGenres || [],
+                authProvider: user.providerData[0]?.providerId || "email"
+            }, { merge: true });
+            
+            // Update local state
+            setPurchases(newPurchases);
+            setCart([]); // Clear cart
+            localStorage.removeItem(`cart-${user.uid}`); // Clear cart from localStorage
+            
+            return true;
+        } catch (error) {
+            console.error("Checkout error:", error);
+            throw error;
+        }
     };
 
     if (loading) {
@@ -113,14 +213,16 @@ export const StoreProvider = ({ children }) => {
     return (
         <StoreContext.Provider value={{
             user,
+            loading,
             cart,
+            setCart,
             preferences,
             purchases,
-            addToCart,
-            removeFromCart,
             checkout,
             updatePreferences,
-            logout
+            logout,
+            addToCart,
+            removeFromCart
         }}>
             {children}
         </StoreContext.Provider>

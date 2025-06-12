@@ -21,7 +21,7 @@ function GenreView() {
     const [movies, setMovies] = useState([]);
     const [page, setPage] = useState(1);
     const { genre_id } = useParams();
-    const { cart, addToCart, removeFromCart } = useStoreContext();
+    const { cart, addToCart, removeFromCart, purchases } = useStoreContext();
 
     const genre = genres.find((g) => g.id === parseInt(genre_id));
     const title = genre ? genre.genre : "Movies:";
@@ -41,9 +41,16 @@ function GenreView() {
         getMovies();
     }, [genre_id, page]);
 
-    function isInCart(movieId) {
-        return cart.some((movie) => movie.id === movieId);
-    }
+    const isInCart = (movieId) => cart.some((item) => item.id === movieId);
+    const isPurchased = (movieId) => purchases?.some((item) => item.id === movieId);
+
+    const handleAddToCart = (movie) => {
+        if (isPurchased(movie.id)) {
+            alert("You already own this movie!");
+            return;
+        }
+        addToCart(movie);
+    };
 
     return (
         <div className="hero">
@@ -70,7 +77,7 @@ function GenreView() {
                                 onClick={() =>
                                     isInCart(movie.id)
                                         ? removeFromCart(movie.id)
-                                        : addToCart(movie)
+                                        : handleAddToCart(movie)
                                 }
                             >
                                 {isInCart(movie.id) ? "Added" : "Buy"}

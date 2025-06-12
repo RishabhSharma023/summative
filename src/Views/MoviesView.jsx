@@ -22,12 +22,10 @@ function MoviesView() {
         { genre: "Horror", id: 27 },
         { genre: "Sci-Fi", id: 878 },
         { genre: "Thriller", id: 53 },
-    ];
-
-    // Filter genres based on user's selected genres
-    const filteredGenres = allGenres.filter((genre) =>
-        user?.selectedGenres?.includes(genre.genre)
-    );
+    ];    // Filter genres based on user's selected genres
+    const filteredGenres = user?.selectedGenres?.length > 0 
+        ? allGenres.filter((genre) => user.selectedGenres.includes(genre.genre))
+        : allGenres;
 
     useEffect(() => {
         if (location.pathname === "/movies" && filteredGenres.length > 0) {

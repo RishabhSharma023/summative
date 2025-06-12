@@ -16,11 +16,9 @@ function Featured() {
         }
 
         getData();
-    }, []);
-
-    return (
+    }, []);    return (
         <div className="movie-container">
-            {movies.slice(0, 3).map(movie => (
+            {movies.map(movie => (
                 <div className="movie-card" key={movie.id}>
                     <h1>{movie.title}</h1>
                     <img

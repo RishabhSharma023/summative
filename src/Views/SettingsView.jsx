@@ -36,9 +36,7 @@ function SettingsView() {
         } else {
             setSelectedGenres((prev) => prev.filter((genre) => genre !== value));
         }
-    }
-
-    async function handleSaveChanges(event) {
+    }    async function handleSaveChanges(event) {
         event.preventDefault();
         setError("");
         setMessage("");
@@ -49,35 +47,49 @@ function SettingsView() {
         }
 
         try {
-            // Update genres
+            // First try to update preferences
             await updatePreferences({ selectedGenres });
             
+            // If that succeeded, try to update profile and password if needed
             if (isEmailUser) {
-                // Update profile for email users
                 if (firstName || lastName) {
                     await updateProfile(auth.currentUser, {
                         displayName: `${firstName} ${lastName}`.trim()
                     });
                 }
 
-                // Update password if provided
                 if (currentPassword && newPassword) {
-                    const credential = EmailAuthProvider.credential(
-                        user.email,
-                        currentPassword
-                    );
-                    await reauthenticateWithCredential(auth.currentUser, credential);
-                    await updatePassword(auth.currentUser, newPassword);
+                    try {
+                        const credential = EmailAuthProvider.credential(
+                            user.email,
+                            currentPassword
+                        );
+                        await reauthenticateWithCredential(auth.currentUser, credential);
+                        await updatePassword(auth.currentUser, newPassword);
+                        setMessage("Settings and password updated successfully!");
+                    } catch (passwordError) {
+                        if (passwordError.code === 'auth/wrong-password') {
+                            setError("Current password is incorrect");
+                            return;
+                        }
+                        throw passwordError;
+                    }
+                } else {
+                    setMessage("Settings updated successfully!");
                 }
+            } else {
+                setMessage("Settings updated successfully!");
             }
 
-            setMessage("Settings updated successfully!");
+            // Clear password fields after successful update
+            setCurrentPassword("");
+            setNewPassword("");
+            
+            // Auto-hide success message after 3 seconds
+            setTimeout(() => setMessage(""), 3000);
         } catch (error) {
-            if (error.code === 'auth/wrong-password') {
-                setError("Current password is incorrect");
-            } else {
-                setError("Failed to update settings");
-            }
+            console.error("Settings update error:", error);
+            setError(error.message || "Failed to update settings. Please try again.");
         }
     }
 

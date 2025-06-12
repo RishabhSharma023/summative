@@ -9,15 +9,20 @@ function LoginView() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-
-    async function handleEmailLogin(event) {
+    const [error, setError] = useState("");    async function handleEmailLogin(event) {
         event.preventDefault();
         try {
             await signInWithEmailAndPassword(auth, email, password);
+            localStorage.setItem("isLoggedIn", "true");
             navigate("/movies");
         } catch (error) {
-            setError("Invalid email or password");
+            if (error.code === 'auth/user-not-found') {
+                setError("Email not registered. Please register first.");
+            } else if (error.code === 'auth/wrong-password') {
+                setError("Invalid password");
+            } else {
+                setError("Invalid email or password");
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import LoginView from './Views/LoginView';
 import MoviesView from './Views/MoviesView';
@@ -17,26 +17,33 @@ export default function AppRoutes() {
   const { user } = useStoreContext();
   const navigate = useNavigate();
   const location = useLocation();
-
   useEffect(() => {
-    if (user && location.pathname === '/login') {
+    // If user is authenticated and trying to access login/register, redirect to movies
+    if (user && (location.pathname === '/login' || location.pathname === '/register')) {
       navigate('/movies');
     }
-  }, [user, location, navigate]);
+    // If user is not authenticated and trying to access protected routes, redirect to login
+    if (!user && location.pathname.startsWith('/movies')) {
+      navigate('/login');
+    }
+  }, [user, location.pathname, navigate]);
 
   return (
     <Routes>
       <Route path="/" element={<HomeView />} />
-      <Route path="/register" element={<RegisterView />} />
-      <Route path="/login" element={<LoginView />} />
+      
+      {/* Auth Routes - Redirect to movies if already logged in */}
+      <Route path="/register" element={user ? <Navigate to="/movies" /> : <RegisterView />} />
+      <Route path="/login" element={user ? <Navigate to="/movies" /> : <LoginView />} />
       
       {/* Protected Routes */}
       <Route element={<ProtectedRoutes />}>
-        <Route path="/movies" element={<MoviesView />} />
-        <Route path="/movie/:id" element={<DetailView />} />
+        <Route path="/movies" element={<MoviesView />}>
+          <Route path="genre/:genre_id" element={<GenreView />} />
+          <Route path="details/:id" element={<DetailView />} />
+          <Route path="search" element={<SearchView />} />
+        </Route>
         <Route path="/cart" element={<CartView />} />
-        <Route path="/search" element={<SearchView />} />
-        <Route path="/genre/:genre" element={<GenreView />} />
         <Route path="/settings" element={<SettingsView />} />
       </Route>
 
