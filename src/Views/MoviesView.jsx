@@ -1,4 +1,4 @@
-import { useEffect, useContext } from "react";
+import { useEffect } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import Header from "../Components/Header";
 import Genres from "../Components/Genres";
@@ -22,16 +22,25 @@ function MoviesView() {
         { genre: "Horror", id: 27 },
         { genre: "Sci-Fi", id: 878 },
         { genre: "Thriller", id: 53 },
-    ];    // Filter genres based on user's selected genres
-    const filteredGenres = user?.selectedGenres?.length > 0 
-        ? allGenres.filter((genre) => user.selectedGenres.includes(genre.genre))
-        : allGenres;
+    ];
+    
+    // Filter genres based on user's selected genres only
+    const filteredGenres = allGenres.filter((genre) => 
+        user?.selectedGenres?.includes(genre.genre)
+    );
 
     useEffect(() => {
+        // If on the movies path and we have genres, navigate to the first one
         if (location.pathname === "/movies" && filteredGenres.length > 0) {
             navigate(`/movies/genre/${filteredGenres[0].id}`);
         }
     }, [location, navigate, filteredGenres]);
+
+    // If there are no genres selected, this means something went wrong - redirect to settings
+    if (!user?.selectedGenres?.length) {
+        navigate('/settings');
+        return null;
+    }
 
     return (
         <div className="moviesView-container">

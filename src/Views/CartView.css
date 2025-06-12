@@ -155,3 +155,29 @@
     font-size: 1.2rem;
     margin: 10px 0;
 }
+
+.checkout-section {
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.cart-total {
+    font-size: 1.2rem;
+    color: #ffffff;
+    margin: 0;
+}
+
+.checkout-button.processing {
+    background-color: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.checkout-button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+    transform: none;
+}

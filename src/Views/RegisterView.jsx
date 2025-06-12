@@ -50,6 +50,19 @@ function RegisterView() {
     async function handleEmailRegister(event) {
         event.preventDefault();
 
+        // Add email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setError("Please enter a valid email address");
+            return;
+        }
+
+        // Add password requirements
+        if (password.length < 6) {
+            setError("Password must be at least 6 characters long");
+            return;
+        }
+
         if (password !== rePassword) {
             setError("Passwords do not match");
             return;
@@ -64,25 +77,30 @@ function RegisterView() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Store additional user data in Firestore            // Update the user profile
+            // Update auth profile first
             await updateProfile(user, {
                 displayName: `${firstName} ${lastName}`
             });
 
-            // Store user data in Firestore
+            // Then store in Firestore
             await setDoc(doc(firestore, "users", user.uid), {
                 firstName,
                 lastName,
                 email,
                 selectedGenres,
                 purchases: [],
-                authProvider: "email"
+                authProvider: "email",
+                displayName: `${firstName} ${lastName}`
             });
 
             navigate("/movies");
         } catch (error) {
             if (error.code === "auth/email-already-in-use") {
-                setError("Email already registered");
+                setError("This email is already registered");
+                // Redirect to login after a short delay
+                setTimeout(() => {
+                    navigate("/login");
+                }, 2000);
             } else {
                 setError("Registration failed. Please try again.");
             }
@@ -93,16 +111,22 @@ function RegisterView() {
         try {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
-            const user = result.user;            await setDoc(doc(firestore, "users", user.uid), {
-                firstName: user.displayName?.split(" ")[0] || "",
-                lastName: user.displayName?.split(" ")[1] || "",
+            const user = result.user;
+            const firstName = user.displayName?.split(" ")[0] || "";
+            const lastName = user.displayName?.split(" ")[1] || "";
+
+            // Redirect to settings to select genres since they aren't selected yet
+            await setDoc(doc(firestore, "users", user.uid), {
+                firstName,
+                lastName,
                 email: user.email,
-                selectedGenres: [],
+                selectedGenres: [], // Empty array - need to select genres in settings
                 purchases: [],
-                authProvider: "google"
+                authProvider: "google",
+                displayName: user.displayName
             }, { merge: true });
 
-            navigate("/movies");
+            navigate("/settings"); // Need to select genres first
         } catch (error) {
             setError("Could not register with Google");
         }
@@ -175,7 +199,7 @@ function RegisterView() {
                     />
                 </form>
                 <button className="googleButton" onClick={handleGoogleRegister}>
-                    Register with Google
+                    Continue with Google
                 </button>
             </div>
         </div>

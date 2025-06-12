@@ -2,7 +2,8 @@ import "./LoginView.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth } from "../firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, firestore } from "../firebase";
 import Header from "../Components/Header.jsx";
 
 function LoginView() {
@@ -17,22 +18,49 @@ function LoginView() {
             navigate("/movies");
         } catch (error) {
             if (error.code === 'auth/user-not-found') {
-                setError("Email not registered. Please register first.");
+                setError("This email is not registered. Please register first.");
             } else if (error.code === 'auth/wrong-password') {
-                setError("Invalid password");
+                setError("Incorrect password. Please try again.");
+            } else if (error.code === 'auth/invalid-email') {
+                setError("Invalid email format. Please check your email.");
+            } else if (error.code === 'auth/too-many-requests') {
+                setError("Too many failed attempts. Please try again later.");
             } else {
-                setError("Invalid email or password");
+                setError("Login failed. Please try again.");
             }
+            console.error("Login error:", error.code);
         }
     }
 
     async function handleGoogleLogin() {
         try {
             const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
-            navigate("/movies");
+            const result = await signInWithPopup(auth, provider);
+            const userDoc = await getDoc(doc(firestore, "users", result.user.uid));
+            
+            if (!userDoc.exists()) {
+                // First time Google login - create user and redirect to settings to select genres
+                await setDoc(doc(firestore, "users", result.user.uid), {
+                    firstName: result.user.displayName?.split(" ")[0] || "",
+                    lastName: result.user.displayName?.split(" ")[1] || "",
+                    email: result.user.email,
+                    selectedGenres: [], // No genres selected yet
+                    purchases: [],
+                    authProvider: "google"
+                });
+                navigate("/settings"); // Need to select genres first
+            } else {
+                // Existing user - go to movies if they have genres, otherwise to settings
+                const userData = userDoc.data();
+                navigate(userData.selectedGenres?.length > 0 ? "/movies" : "/settings");
+            }
         } catch (error) {
-            setError("Could not sign in with Google");
+            if (error.code === 'auth/popup-closed-by-user') {
+                setError("Login cancelled. Please try again.");
+            } else {
+                setError("Could not sign in with Google. Please try again.");
+            }
+            console.error("Google login error:", error.code);
         }
     }
 
@@ -63,7 +91,7 @@ function LoginView() {
                     <input className="loginButtonLog" type="submit" value="Login" />
                 </form>
                 <button className="googleButton" onClick={handleGoogleLogin}>
-                    Sign in with Google
+                    Continue with Google
                 </button>
             </div>
         </div>

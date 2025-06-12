@@ -1,10 +1,12 @@
 import "./SettingsView.css";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useStoreContext } from "../Contexts";
 import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { auth } from "../firebase";
 
 function SettingsView() {
+    const navigate = useNavigate();
     const { user, preferences, updatePreferences, purchases } = useStoreContext();
     const [firstName, setFirstName] = useState(user?.displayName?.split(" ")[0] || "");
     const [lastName, setLastName] = useState(user?.displayName?.split(" ")[1] || "");
@@ -41,24 +43,30 @@ function SettingsView() {
         setError("");
         setMessage("");
 
-        if (selectedGenres.length < 5) {
-            setError("Please select at least 5 genres");
-            return;
-        }
-
         try {
-            // First try to update preferences
-            await updatePreferences({ selectedGenres });
-            
-            // If that succeeded, try to update profile and password if needed
+            // Validate genre selection
+            if (selectedGenres.length < 5) {
+                setError("Please select at least 5 genres");
+                return;
+            }
+
+            // If email user is updating name/password
             if (isEmailUser) {
                 if (firstName || lastName) {
-                    await updateProfile(auth.currentUser, {
-                        displayName: `${firstName} ${lastName}`.trim()
-                    });
+                    const newDisplayName = `${firstName} ${lastName}`.trim();
+                    if (newDisplayName !== user.displayName) {
+                        await updateProfile(auth.currentUser, {
+                            displayName: newDisplayName
+                        });
+                    }
                 }
 
                 if (currentPassword && newPassword) {
+                    if (newPassword.length < 6) {
+                        setError("New password must be at least 6 characters long");
+                        return;
+                    }
+
                     try {
                         const credential = EmailAuthProvider.credential(
                             user.email,
@@ -66,7 +74,6 @@ function SettingsView() {
                         );
                         await reauthenticateWithCredential(auth.currentUser, credential);
                         await updatePassword(auth.currentUser, newPassword);
-                        setMessage("Settings and password updated successfully!");
                     } catch (passwordError) {
                         if (passwordError.code === 'auth/wrong-password') {
                             setError("Current password is incorrect");
@@ -74,16 +81,22 @@ function SettingsView() {
                         }
                         throw passwordError;
                     }
-                } else {
-                    setMessage("Settings updated successfully!");
                 }
-            } else {
-                setMessage("Settings updated successfully!");
             }
 
-            // Clear password fields after successful update
+            // Update preferences in Firestore
+            await updatePreferences({
+                selectedGenres,
+                firstName: firstName || user.firstName,
+                lastName: lastName || user.lastName
+            });
+
+            // Clear password fields
             setCurrentPassword("");
             setNewPassword("");
+            
+            // Show success message
+            setMessage("Settings updated successfully!");
             
             // Auto-hide success message after 3 seconds
             setTimeout(() => setMessage(""), 3000);
@@ -93,12 +106,31 @@ function SettingsView() {
         }
     }
 
+    // Add notification message if no genres are selected
+    const showGenreWarning = user && (!user.selectedGenres || user.selectedGenres.length === 0);
+
     return (
         <div className="settings-container">
             <h1 className="settings-title">Settings</h1>
             {error && <p className="error-message">{error}</p>}
             {message && <p className="success-message">{message}</p>}
+            {showGenreWarning && (
+                <p className="warning-message">
+                    Please select at least 5 genres to continue browsing movies.
+                </p>
+            )}
             
+            <button className="back-button" onClick={() => {
+                // Only allow going back to movies if genres are selected
+                if (user?.selectedGenres?.length > 0) {
+                    navigate('/movies');
+                } else {
+                    setError("Please select at least 5 genres first");
+                }
+            }}>
+                Back to Movies
+            </button>
+
             <form className="settings-form" onSubmit={handleSaveChanges}>
                 <label className="settings-label">First Name:</label>
                 <input

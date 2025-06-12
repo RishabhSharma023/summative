@@ -130,3 +130,14 @@
     background-color: #1e90ff;
     transform: scale(1.05);
 }
+
+.buy-button.owned {
+    background-color: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.buy-button.owned:hover {
+    background-color: #666;
+    transform: none;
+}

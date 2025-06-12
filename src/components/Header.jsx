@@ -10,6 +10,16 @@ function Header() {
     const [searchQuery, setSearchQuery] = useState("");
     const searchInputRef = useRef(null);
 
+    // Helper function to get user's display name
+    const getUserDisplayName = () => {
+        if (user?.firstName) {
+            return user.firstName;
+        } else if (user?.displayName) {
+            return user.displayName.split(" ")[0];
+        }
+        return "User";
+    };
+
     // Update the URL dynamically as the user types
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -46,20 +56,24 @@ function Header() {
             <div className="login-container">
                 {isLoggedIn ? (
                     <>
-                        <span className="welcome-message">Hello {user?.firstName}!</span>
-                        <form className="search-form" ref={searchInputRef}>
-                            <input
-                                type="text"
-                                className="search-box"
-                                placeholder="Search movies..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onBlur={handleBlur}
-                            />
-                        </form>
-                        <button className="button" onClick={() => navigate('/cart')}>Cart</button>
-                        <button className="button" onClick={() => navigate('/settings')}>Settings</button>
-                        <button className="button" onClick={handleSignOut}>Logout</button>
+                        <div className="search-container">
+                            <span className="welcome-message">Hello {getUserDisplayName()}!</span>
+                            <form className="search-form" ref={searchInputRef}>
+                                <input
+                                    type="text"
+                                    className="search-box"
+                                    placeholder="Search movies..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onBlur={handleBlur}
+                                />
+                            </form>
+                        </div>
+                        <div className="buttons-container">
+                            <button className="button" onClick={() => navigate('/cart')}>Cart</button>
+                            <button className="button" onClick={() => navigate('/settings')}>Settings</button>
+                            <button className="button" onClick={handleSignOut}>Logout</button>
+                        </div>
                     </>
                 ) : (
                     <>

@@ -71,14 +71,15 @@ function SearchView() {
                                 </Link>
                                 <h3 className="search-result-title">{movie.title}</h3>
                                 <button
-                                    className="buy-button"
+                                    className={`buy-button ${isPurchased(movie.id) ? 'owned' : ''}`}
                                     onClick={() =>
                                         isInCart(movie.id)
                                             ? removeFromCart(movie.id)
                                             : handleAddToCart(movie)
                                     }
+                                    disabled={isPurchased(movie.id)}
                                 >
-                                    {isInCart(movie.id) ? "Added" : "Buy"}
+                                    {isPurchased(movie.id) ? "Owned" : isInCart(movie.id) ? "Added" : "Buy"}
                                 </button>
                             </div>
                         ))}
