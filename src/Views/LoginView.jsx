@@ -30,37 +30,30 @@ function LoginView() {
             }
             console.error("Login error:", error.code);
         }
-    }
-
-    async function handleGoogleLogin() {
+    }    async function handleGoogleLogin() {
         try {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
             const userDoc = await getDoc(doc(firestore, "users", result.user.uid));
             
             if (!userDoc.exists()) {
-                // First time Google login - create user and redirect to settings to select genres
-                await setDoc(doc(firestore, "users", result.user.uid), {
-                    firstName: result.user.displayName?.split(" ")[0] || "",
-                    lastName: result.user.displayName?.split(" ")[1] || "",
-                    email: result.user.email,
-                    selectedGenres: [], // No genres selected yet
-                    purchases: [],
-                    authProvider: "google"
-                });
-                navigate("/settings"); // Need to select genres first
-            } else {
-                // Existing user - go to movies if they have genres, otherwise to settings
-                const userData = userDoc.data();
-                navigate(userData.selectedGenres?.length > 0 ? "/movies" : "/settings");
+                // User hasn't registered yet
+                setError("Please register first to use Google sign-in");
+                navigate("/register");
+                return;
             }
+            
+            // Existing user - go to movies if they have genres, otherwise to settings
+            const userData = userDoc.data();
+            localStorage.setItem("isLoggedIn", "true");
+            navigate(userData.selectedGenres?.length > 0 ? "/movies" : "/settings");
         } catch (error) {
             if (error.code === 'auth/popup-closed-by-user') {
                 setError("Login cancelled. Please try again.");
             } else {
                 setError("Could not sign in with Google. Please try again.");
+                console.error("Google login error:", error);
             }
-            console.error("Google login error:", error.code);
         }
     }
 

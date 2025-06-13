@@ -2,7 +2,7 @@ import "./RegisterView.css";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, firestore } from "../firebase";
 import Header from "../Components/Header.jsx";
 import { useStoreContext } from "../Contexts";
@@ -50,19 +50,6 @@ function RegisterView() {
     async function handleEmailRegister(event) {
         event.preventDefault();
 
-        // Add email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            setError("Please enter a valid email address");
-            return;
-        }
-
-        // Add password requirements
-        if (password.length < 6) {
-            setError("Password must be at least 6 characters long");
-            return;
-        }
-
         if (password !== rePassword) {
             setError("Passwords do not match");
             return;
@@ -77,58 +64,62 @@ function RegisterView() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Update auth profile first
-            await updateProfile(user, {
-                displayName: `${firstName} ${lastName}`
-            });
-
-            // Then store in Firestore
+            // Store user data in Firestore            
             await setDoc(doc(firestore, "users", user.uid), {
                 firstName,
                 lastName,
                 email,
                 selectedGenres,
                 purchases: [],
-                authProvider: "email",
-                displayName: `${firstName} ${lastName}`
+                authProvider: "email"
             });
 
             navigate("/movies");
         } catch (error) {
             if (error.code === "auth/email-already-in-use") {
-                setError("This email is already registered");
-                // Redirect to login after a short delay
-                setTimeout(() => {
-                    navigate("/login");
-                }, 2000);
+                setError("Email already registered");
             } else {
                 setError("Registration failed. Please try again.");
             }
         }
-    }
-
-    async function handleGoogleRegister() {
+    }    async function handleGoogleRegister() {
         try {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-            const firstName = user.displayName?.split(" ")[0] || "";
-            const lastName = user.displayName?.split(" ")[1] || "";
+            
+            // Check if the user already exists in Firestore
+            const userRef = doc(firestore, "users", result.user.uid);
+            const userDoc = await getDoc(userRef);
+            
+            if (userDoc.exists()) {
+                // User already exists, sign them out and redirect to login
+                await auth.signOut();
+                setError("Account already exists. Please login instead.");
+                setTimeout(() => {
+                    navigate("/login");
+                }, 1500);
+                return;
+            }
 
-            // Redirect to settings to select genres since they aren't selected yet
-            await setDoc(doc(firestore, "users", user.uid), {
-                firstName,
-                lastName,
-                email: user.email,
-                selectedGenres: [], // Empty array - need to select genres in settings
+            // This is a new user, create their account
+            await setDoc(userRef, {
+                firstName: result.user.displayName?.split(" ")[0] || "",
+                lastName: result.user.displayName?.split(" ")[1] || "",
+                email: result.user.email,
+                selectedGenres: [],
                 purchases: [],
-                authProvider: "google",
-                displayName: user.displayName
-            }, { merge: true });
-
-            navigate("/settings"); // Need to select genres first
+                authProvider: "google"
+            });
+            
+            localStorage.setItem("isLoggedIn", "true");
+            navigate("/settings"); // Send to settings to select genres
         } catch (error) {
-            setError("Could not register with Google");
+            console.error("Google registration error:", error);
+            if (error.code === "auth/popup-closed-by-user") {
+                setError("Sign-in popup was closed");
+            } else {
+                setError("Could not register with Google. Please try again.");
+            }
         }
     }
 

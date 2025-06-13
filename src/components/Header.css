@@ -15,6 +15,13 @@
   align-items: center;
   gap: 10px;
   margin-left: 0px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.logo-container:hover {
+  transform: scale(1.02);
 }
 
 .logoImg {
@@ -27,6 +34,7 @@
   font-size: 1.5em;
   font-weight: bold;
   color: #4c7dd4;
+  text-decoration: none;
 }
 
 .login-container {
