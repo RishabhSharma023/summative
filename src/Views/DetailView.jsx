@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useStoreContext } from "../Contexts";
 import "./DetailView.css";
 
 function DetailView() {
@@ -9,6 +10,7 @@ function DetailView() {
     const [director, setDirector] = useState(null);
     const { id } = useParams();
     const navigate = useNavigate();
+    const { cart, addToCart, removeFromCart, purchases } = useStoreContext();
 
     useEffect(() => {
         async function fetchMovieDetails() {
@@ -38,6 +40,17 @@ function DetailView() {
         fetchMovieDetails();
     }, [id]);
 
+    const isInCart = cart.some((item) => item.id === movie.id);
+    const isPurchased = purchases?.some((item) => item.id === movie.id);
+
+    const handleAddToCart = () => {
+        if (isPurchased) {
+            alert("You already own this movie!");
+            return;
+        }
+        addToCart(movie);
+    };
+
     return (
         <div className="movie-detail">
             <div className="movie-content">
@@ -60,6 +73,15 @@ function DetailView() {
                     <p><strong>Budget: </strong>{movie.budget ? `$${(movie.budget / 1_000_000).toFixed(1)} Million` : "N/A"}</p>
                     <p><strong>Revenue: </strong>{movie.revenue ? `$${(movie.revenue / 1_000_000).toFixed(1)} Million` : "N/A"}</p>
                 </div>
+
+                {/* Buy Button */}
+                <button
+                    className={`buy-button ${isPurchased ? "owned" : ""}`}
+                    onClick={isInCart ? () => removeFromCart(movie.id) : handleAddToCart}
+                    disabled={isPurchased}
+                >
+                    {isPurchased ? "Owned" : isInCart ? "Remove from Cart" : "Buy"}
+                </button>
             </div>
 
             <div className="trailers-section">

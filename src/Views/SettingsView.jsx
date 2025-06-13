@@ -1,5 +1,5 @@
 import "./SettingsView.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStoreContext } from "../Contexts";
 import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
@@ -8,13 +8,22 @@ import { auth } from "../firebase";
 function SettingsView() {
     const navigate = useNavigate();
     const { user, preferences, updatePreferences, purchases } = useStoreContext();
-    const [firstName, setFirstName] = useState(user?.displayName?.split(" ")[0] || "");
-    const [lastName, setLastName] = useState(user?.displayName?.split(" ")[1] || "");
+    const [firstName, setFirstName] = useState(user?.firstName || "");
+    const [lastName, setLastName] = useState(user?.lastName || "");
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [selectedGenres, setSelectedGenres] = useState(preferences?.selectedGenres || []);
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
+
+    // Update form fields when user data changes
+    useEffect(() => {
+        if (user) {
+            setFirstName(user.firstName || "");
+            setLastName(user.lastName || "");
+            setSelectedGenres(user.selectedGenres || []);
+        }
+    }, [user]);
 
     const genres = [
         { name: "Action", id: 28 },
@@ -74,6 +83,14 @@ function SettingsView() {
                         );
                         await reauthenticateWithCredential(auth.currentUser, credential);
                         await updatePassword(auth.currentUser, newPassword);
+                        
+                        // Update password length in preferences
+                        await updatePreferences({
+                            selectedGenres,
+                            firstName: firstName || user.firstName,
+                            lastName: lastName || user.lastName,
+                            passwordLength: newPassword.length // Add the new password length
+                        });
                     } catch (passwordError) {
                         if (passwordError.code === 'auth/wrong-password') {
                             setError("Current password is incorrect");
@@ -81,15 +98,22 @@ function SettingsView() {
                         }
                         throw passwordError;
                     }
+                } else {
+                    // Update preferences without changing password length
+                    await updatePreferences({
+                        selectedGenres,
+                        firstName: firstName || user.firstName,
+                        lastName: lastName || user.lastName
+                    });
                 }
+            } else {
+                // For non-email users, just update preferences
+                await updatePreferences({
+                    selectedGenres,
+                    firstName: firstName || user.firstName,
+                    lastName: lastName || user.lastName
+                });
             }
-
-            // Update preferences in Firestore
-            await updatePreferences({
-                selectedGenres,
-                firstName: firstName || user.firstName,
-                lastName: lastName || user.lastName
-            });
 
             // Clear password fields
             setCurrentPassword("");
@@ -137,8 +161,8 @@ function SettingsView() {
                     type="text"
                     className="settings-input"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    disabled={!isEmailUser}
+                    disabled={true}
+                    readOnly
                 />
 
                 <label className="settings-label">Last Name:</label>
@@ -146,8 +170,8 @@ function SettingsView() {
                     type="text"
                     className="settings-input"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    disabled={!isEmailUser}
+                    disabled={true}
+                    readOnly
                 />
 
                 <label className="settings-label">Email:</label>
@@ -164,6 +188,7 @@ function SettingsView() {
                         <input
                             type="password"
                             className="settings-input"
+                            placeholder="Enter current password"
                             value={currentPassword}
                             onChange={(e) => setCurrentPassword(e.target.value)}
                         />
@@ -174,6 +199,7 @@ function SettingsView() {
                             className="settings-input"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
+                            placeholder="Enter new password"
                         />
                     </>
                 )}

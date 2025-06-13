@@ -9,7 +9,7 @@ import "./MoviesView.css";
 function MoviesView() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useStoreContext();
+    const { user, loading } = useStoreContext();
 
     const allGenres = [
         { genre: "Action", id: 28 },
@@ -36,12 +36,18 @@ function MoviesView() {
         }
     }, [location, navigate, filteredGenres]);
 
-    // If there are no genres selected, this means something went wrong - redirect to settings
-    if (!user?.selectedGenres?.length) {
-        navigate('/settings');
-        return null;
+    // Show loading state or no genres message
+    if (loading || !user?.selectedGenres?.length) {
+        return (
+            <div className="moviesView-container">
+                <Header />
+                <div className="no-genres-message">
+                    <h2>Loading...</h2>
+                </div>
+            </div>
+        );
     }
-
+    
     return (
         <div className="moviesView-container">
             <Header />

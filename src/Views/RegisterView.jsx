@@ -71,18 +71,22 @@ function RegisterView() {
                 email,
                 selectedGenres,
                 purchases: [],
-                authProvider: "email"
+                authProvider: "email",
+                passwordLength: password.length // Store password length
             });
 
             navigate("/movies");
         } catch (error) {
             if (error.code === "auth/email-already-in-use") {
-                setError("Email already registered");
+                alert("Account already exists. Redirecting to login...");
+                navigate("/login");
             } else {
                 setError("Registration failed. Please try again.");
             }
         }
-    }    async function handleGoogleRegister() {
+    }
+
+    async function handleGoogleRegister() {
         try {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
@@ -94,10 +98,8 @@ function RegisterView() {
             if (userDoc.exists()) {
                 // User already exists, sign them out and redirect to login
                 await auth.signOut();
-                setError("Account already exists. Please login instead.");
-                setTimeout(() => {
-                    navigate("/login");
-                }, 1500);
+                alert("Account already exists. Redirecting to login...");
+                navigate("/login");
                 return;
             }
 

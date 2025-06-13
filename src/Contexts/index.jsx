@@ -28,7 +28,6 @@ export const StoreProvider = ({ children }) => {
                         if (storedCart) {
                             try {
                                 const parsedCart = JSON.parse(storedCart);
-                                // Ensure cart is always an array
                                 setCart(Array.isArray(parsedCart) ? parsedCart : []);
                             } catch (e) {
                                 console.error('Error parsing cart:', e);
@@ -61,7 +60,6 @@ export const StoreProvider = ({ children }) => {
                             setPurchases([]);
                         } else {
                             const data = userDoc.data();
-                            // Ensure arrays are handled properly
                             const selectedGenres = Array.isArray(data.selectedGenres) ? data.selectedGenres : [];
                             const userPurchases = Array.isArray(data.purchases) ? data.purchases : [];
                             
@@ -75,18 +73,16 @@ export const StoreProvider = ({ children }) => {
                             });
                             setPurchases(userPurchases);
                         }
-                        break; // Success - exit the retry loop
+                        break;
                     } catch (error) {
                         console.error(`Error loading user data (attempt ${retryCount + 1}):`, error);
                         retryCount++;
                         if (retryCount === maxRetries) {
-                            // On final retry, set default values
                             setCart([]);
                             setPreferences({ selectedGenres: [] });
                             setPurchases([]);
                             console.error("Failed to load user data after all retries");
                         } else {
-                            // Wait before retrying (exponential backoff)
                             await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
                         }
                     }
@@ -97,38 +93,49 @@ export const StoreProvider = ({ children }) => {
         }
     }, [user?.uid]);
 
-    // Save cart to local storage
     useEffect(() => {
         if (user?.uid && cart) {
-            try {
-                localStorage.setItem(`cart-${user.uid}`, JSON.stringify(cart));
-            } catch (error) {
-                console.error("Error saving cart to local storage:", error);
-            }
+            localStorage.setItem(`cart-${user.uid}`, JSON.stringify(cart));
         }
-    }, [cart, user]);
+    }, [cart, user?.uid]);
 
     // Handle auth state changes
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-            setLoading(false);
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (!currentUser) {
-                setCart([]);
                 setPreferences(null);
                 setPurchases([]);
+                setUser(null);
+                setCart([]);
                 localStorage.removeItem("isLoggedIn");
             } else {
+                setUser(currentUser);
+                // Load cart from localStorage after user is set
+                const storedCart = localStorage.getItem(`cart-${currentUser.uid}`);
+                if (storedCart) {
+                    try {
+                        const parsedCart = JSON.parse(storedCart);
+                        setCart(Array.isArray(parsedCart) ? parsedCart : []);
+                    } catch (e) {
+                        console.error('Error parsing cart:', e);
+                        setCart([]);
+                    }
+                }
                 localStorage.setItem("isLoggedIn", "true");
             }
+            setLoading(false);
         });
         return () => unsubscribe();
     }, []);
 
     const logout = async () => {
         try {
+            const currentUserId = user?.uid;
+            if (currentUserId && cart.length > 0) {
+                // Save cart before logout
+                localStorage.setItem(`cart-${currentUserId}`, JSON.stringify(cart));
+            }
             await signOut(auth);
-            localStorage.removeItem(`cart-${user?.uid}`);
             localStorage.removeItem("isLoggedIn");
         } catch (error) {
             console.error("Error signing out:", error);
@@ -152,7 +159,9 @@ export const StoreProvider = ({ children }) => {
                 selectedGenres: newPreferences.selectedGenres || currentData.selectedGenres || [],
                 firstName: newPreferences.firstName || currentData.firstName || "",
                 lastName: newPreferences.lastName || currentData.lastName || "",
-                email: user.email
+                email: user.email,
+                // Only update passwordLength if it's provided in newPreferences
+                ...(newPreferences.passwordLength !== undefined && { passwordLength: newPreferences.passwordLength })
             };
             
             // Update Firestore

@@ -10,7 +10,7 @@ function KeyTest() {
     const [field2, setField2] = useState('');
 
     useEffect(() => {
-        const storedCart = localStorage.getItem(`${user.uid}-cart`);
+        const storedCart = localStorage.getItem(`cart-${user.uid}`);
         if (storedCart) {
             const parsedCart = JSON.parse(storedCart);
             setCart(Map(parsedCart));
@@ -23,7 +23,7 @@ function KeyTest() {
 
         const vanillaCart = updatedCart.toJS();
         const parseCart = JSON.stringify(vanillaCart);
-        localStorage.setItem(`${user.uid}-cart`, parseCart);
+        localStorage.setItem(`cart-${user.uid}`, parseCart);
     };
 
     const handlePurchase = async () => {
